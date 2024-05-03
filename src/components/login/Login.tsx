@@ -1,4 +1,5 @@
 import React, { useState} from 'react'
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Login.css';
 import RequestHandler from '../../services/RequestHandler';
@@ -6,6 +7,7 @@ import { ModalInterface } from '../../interfaces/Modal';
 import MyModal from '../modal/Modal';
 
 export const Login = () => {
+    const navigate = useNavigate();
 
     const [credentials, setCredentials] = useState<{username: string; password: string}>({
         username: '',
@@ -30,17 +32,18 @@ export const Login = () => {
         try {
             const response = await RequestHandler.sendRequet('POST', '/api/business/user/auth', null, credentials);
             console.log(response);
-            if(response.status === 200){
+            if(response.statusCode === 200){
                 console.log("funciona")
                 sessionStorage.setItem("idTag", response.id);
                 sessionStorage.setItem("typeUser", response.type_user);
                 sessionStorage.setItem("user", credentials.username);
                 sessionStorage.setItem("token", response.token);
+                navigate('/home');
             }
             else{
                 setModalData({
                     show: true, 
-                    title: response.status, 
+                    title: "Fail Authentication", 
                     cause: response.cause
                 });
             }

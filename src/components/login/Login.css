@@ -1,18 +1,16 @@
-body{
-    background: #f8f9fd;
-}
+
 .custom-container {
-    margin-top: 11%;
-    width: 48vw;
-    height: 53vh; /* Reducir la altura del contenedor principal */
-    display: flex; /* Usar flexbox */
+    width: 100vw;
+    height: 100vh;
+    background-color: #f8f9fd;
     justify-content: center; /* Centrar horizontalmente el contenido */
     align-items: center !important; /* Centrar verticalmente el contenido */
+    display: flex; /* Usar flexbox */
   }
 
 .row{
-    height: 100%;
-    width: 100%;
+    width: 48vw;
+    height: 53vh; /* Reducir la altura del contenedor principal */
 }
 
 .col-md-6.p-0 {
