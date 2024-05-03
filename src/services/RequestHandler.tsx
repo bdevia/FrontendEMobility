@@ -29,7 +29,9 @@ class RequestHandler{
                 body: JSON.stringify(body),
             });
 
-            return await response.json();
+            const responseData = await response.json();
+            responseData.statusCode = response.status;
+            return responseData;
         }
         catch(error){
             console.error(error);

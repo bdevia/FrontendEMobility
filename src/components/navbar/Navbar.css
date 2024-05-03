@@ -1,0 +1,15 @@
+.my-container{
+    max-width: 1600px;
+}
+
+.logo-nav{
+    width: 200px;
+}
+
+.nav-link{
+    padding-left: 20px !important;
+}
+
+@media (max-width: 900px) {
+    
+}
