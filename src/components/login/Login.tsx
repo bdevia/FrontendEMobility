@@ -30,21 +30,21 @@ export const Login = () => {
 
     const handleSumit = async () => {
         try {
-            const response = await RequestHandler.sendRequet('POST', '/api/business/user/auth', null, credentials);
+            const response = await RequestHandler.sendRequet('POST', '/user/auth', null, credentials);
             console.log(response);
-            if(response.statusCode === 200){
+            if(response.status === 200){
                 console.log("funciona")
-                sessionStorage.setItem("idTag", response.id);
-                sessionStorage.setItem("typeUser", response.type_user);
+                sessionStorage.setItem("idTag", response.data.id);
+                sessionStorage.setItem("typeUser", response.data.type_user);
                 sessionStorage.setItem("user", credentials.username);
-                sessionStorage.setItem("token", response.token);
+                sessionStorage.setItem("token", response.data.token);
                 navigate('/home');
             }
             else{
                 setModalData({
                     show: true, 
                     title: "Fail Authentication", 
-                    cause: response.cause
+                    cause: response.data.cause
                 });
             }
         }

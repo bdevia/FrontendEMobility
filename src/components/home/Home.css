@@ -1,3 +1,67 @@
-body{
-    background-color: white !important;
+.my-div{
+    max-width: 1600px;
+    margin: 5% auto;
+    padding: 30px;
+    --bs-bg-opacity: 1;
+    background-color: rgba(var(--bs-tertiary-bg-rgb),var(--bs-bg-opacity))!important;
+}
+
+.header_table{
+    display: flex;
+    align-items: flex-end; 
+    margin-bottom: 15px;
+}
+
+.title_container{
+    flex: 1;
+}
+
+.controls_container{
+    display: flex;
+    align-items: flex-end; 
+    gap: 20px;
+}
+
+.my-table{
+    margin: 0;
+}
+
+.scrollable_tbody{
+    height: 420px !important; 
+    overflow-y: auto;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+  }
+
+
+.pagination{
+    justify-content: right;
+    margin-top: 10px;
+}
+
+.pagination input{
+    max-width: 70px;
+}
+
+.pagination_info{
+    margin-right: 20px;
+    margin-top: 7px;
+    display: flex;
+    align-items: center;
+}
+
+.pagination_info label{
+    padding-right: 5px;
+}
+
+.left{
+    margin-right: 5px;
+}
+
+.pagination_control{
+    display: flex;
+    align-items: center;
 }

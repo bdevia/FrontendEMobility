@@ -16,22 +16,33 @@ class RequestHandler{
         return RequestHandler.instance;
     }*/
 
-    public static async sendRequet(method: string, endPoint: string, authToken: string | null, body: any): Promise<any>{
-        const url = `http://${RequestHandler.host}:${RequestHandler.port}${endPoint}`;
+    public static async sendRequet(method: string, endPoint: string, authToken: string | null, body: any): Promise<{data: any, status: number}>{
+        const url = `http://${RequestHandler.host}:${RequestHandler.port}/api/business${endPoint}`;
         console.log(url);
         try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json', 
-                },
-                body: JSON.stringify(body),
-            });
+            let response;
+            if(method === 'GET'){
+                response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json', 
+                    }
+                });
+            }
+            else{
+                response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json', 
+                    },
+                    body: JSON.stringify(body),
+                });
+            }
 
             const responseData = await response.json();
-            responseData.statusCode = response.status;
-            return responseData;
+            return {data: responseData, status: response.status}
         }
         catch(error){
             console.error(error);
