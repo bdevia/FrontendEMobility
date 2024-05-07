@@ -1,8 +1,8 @@
 export interface InputData{
     id: string;
     vendor: string;
-    connectionType: string;
-    numberConnectors: number;
+    connection_type: string;
+    connectors: number;
 }
 
 export interface ArrayInputData{
