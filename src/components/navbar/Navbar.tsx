@@ -21,7 +21,7 @@ export const MyNavbar = () => {
 
     const logout = () =>{
         sessionStorage.clear();
-        navigate('/auth/user');
+        navigate('/user/auth');
     };
 
 

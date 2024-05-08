@@ -3,6 +3,7 @@ export interface InputData{
     vendor: string;
     connection_type: string;
     connectors: number;
+    status: string;
 }
 
 export interface ArrayInputData{

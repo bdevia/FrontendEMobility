@@ -16,26 +16,18 @@
     flex: 1;
 }
 
-.controls_container{
-    display: flex;
-    align-items: flex-end; 
-    gap: 20px;
-}
+.controls_container {
+    display: grid;
+    grid-template-columns: auto auto; /* Dos columnas de ancho automático */
+    align-items: center; /* Centra verticalmente los elementos */
+    gap: 15px; /* Espacio entre los elementos */
+  }
 
-.my-table{
-    margin: 0;
-}
 
 .scrollable_tbody{
     height: 420px !important; 
     overflow-y: auto;
 }
-
-thead th {
-    position: sticky;
-    top: 0;
-  }
-
 
 .pagination{
     justify-content: right;
@@ -64,4 +56,29 @@ thead th {
 .pagination_control{
     display: flex;
     align-items: center;
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+  }
+  
+.circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 26%;
+    margin-right: 8px;
+}
+
+.green {
+    background-color: green;
+}
+
+.red {
+    background-color: red;
+}
+  
+.icon {
+    margin-bottom: 4px;
+
 }
