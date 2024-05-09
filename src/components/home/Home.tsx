@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Table } from 'react-bootstrap';
 import './Home.css'
-import { MyNavbar } from '../navbar/Navbar';
 import { ArrayInputData, InputData } from '../../interfaces/Table';
 import RequestHandler from '../../services/RequestHandler';
 import { User } from '../../interfaces/User';
-import { BiPlus, BiPencil, BiTrash, BiInfoCircle } from 'react-icons/bi';
+import { BiTrash } from 'react-icons/bi';
+import { LiaPlusCircleSolid } from "react-icons/lia";
+import { RiInformationLine } from "react-icons/ri";
+import { PiPlugCharging } from "react-icons/pi";
+import { ModalInterface } from '../../interfaces/Modal';
+import MyModal from '../modal/Modal';
+import { MySidebar } from '../sidebar/Sidebar';
 
 
 export const Home = () => {
@@ -37,10 +42,11 @@ export const Home = () => {
               newMap.set(row.id, row.status);
             }); 
             setMapState(newMap);
+            setPerPage(response.data.length);
           }
-          else if(response.status === 406){ // AGREGAR MODAL PARA SESION EXPIRADA
+          else if(response.status === 406){
             sessionStorage.clear();
-            navigate('/user/auth');
+            setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
           }
         }
         catch(error){
@@ -84,72 +90,135 @@ export const Home = () => {
   const [chargePoints, setChargePoints] = useState<ArrayInputData>({ data: [] });
   const [mapState, setMapState] = useState<Map<string, string>>(new Map());
 
+  const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: ""});
+
+  const [searchText, setSearchText] = useState<string>('');
+
+  const [perPage, setPerPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredData = chargePoints.data.filter((row) =>
+    Object.values(row).some(
+      (value) =>
+        typeof value === 'string' &&
+        value.toLowerCase().startsWith(searchText.toLowerCase())
+    )
+  );
+
+  const startIndex = (currentPage - 1) * perPage;
+  const endIndex = Math.min(startIndex + perPage, filteredData.length);
+
+  const filteredDataInterval = filteredData.slice(startIndex, endIndex);
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+  };
+
+  const handlePerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setPerPage(Number(event.target.value));
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const onHideModal = () => {
+    setModalData(prevState => ({
+      ...prevState,
+      show: false
+    }));
+    navigate('/user/auth');
+  };
+
+  const onClickConnectors = (id: string) =>{
+    navigate(`/chargePoint/${id}/connectors`);
+  }
+
   return (
     <>
-      <MyNavbar/>
+      <MySidebar/>
 
-      <div className='my-div'>
+      <div className='my-rest-space'>
 
-        <div className='header_table'>
-            <div className="title_container">
-                <h5>Puntos de Carga Registrados</h5>
-            </div>
-            <div className="controls_container">
-                <button type='button' className="btn btn-success"><BiPlus className='icon'/> Add ChargePoint</button>
-                <input type="text" className="form-control" placeholder="Buscar" defaultValue=""/>
-            </div>
-        </div>
+        <div className='my-div'>
 
-        <div className='scrollable_tbody'>
-          <Table striped responsive>
-            <thead>
-              <tr>
-                <th>Device</th>
-                <th>Marca</th>
-                <th>Tipo Conexión</th>
-                <th>Sockets</th>
-                <th>Estado</th>
-                <th>Revisar</th>
-                <th>Editar</th>
-                <th>Eliminar</th>
-              </tr>
-            </thead>
-            <tbody > 
-                {chargePoints.data && chargePoints.data.length > 0 ? (
-                  chargePoints.data.map((row, index) => (
-                    <tr key={index}>
-                      <td>{row.id}</td>
-                      <td>{row.vendor}</td>
-                      <td>{row.connection_type}</td>
-                      <td>{row.connectors}</td>
-                      <td>
-                        <div className="status-container">
-                          <div className={mapState.get(row.id) === "Connected" ? "circle green" : "circle red"}></div>
-                          <span>{mapState.get(row.id)}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <button type="button" className="btn btn-warning"><BiInfoCircle className='icon'/> View</button>
-                      </td>
-                      <td>
-                        <button type="button" className="btn btn-primary"><BiPencil className='icon'/> Edit</button>
-                      </td>
-                      <td>
-                        <button type="button" className="btn btn-danger"><BiTrash className='icon'/> Delete</button>
-                      </td>
+          <div className='header_table'>
+              <div className="title_container">
+                  <h5>Puntos de Carga Registrados</h5>
+              </div>
+              <div className="controls_container">
+                  <button type='button' className="btn btn-outline-success"><LiaPlusCircleSolid className='icon'/> New ChargePoint</button>
+                  <input type="text" className="form-control" placeholder="Buscar" value={searchText} onChange={handleSearchChange}/>
+              </div>
+          </div>
+
+          <div className='scrollable_tbody'>
+            <Table striped responsive>
+              <thead>
+                <tr>
+                  <th>Device</th>
+                  <th>Marca</th>
+                  <th>Tipo Conexión</th>
+                  <th>Sockets</th>
+                  <th>Estado</th>
+                  <th>Conectores</th>
+                  <th>Detalles</th>
+                  <th>Eliminar</th>
+                </tr>
+              </thead>
+              <tbody > 
+                  {chargePoints.data && chargePoints.data.length > 0 ? (
+                    filteredDataInterval.map((row, index) => (
+                      <tr key={index}>
+                        <td>{row.id}</td>
+                        <td>{row.vendor}</td>
+                        <td>{row.connection_type}</td>
+                        <td>{row.connectors}</td>
+                        <td>
+                          <div className="status-container">
+                            <div className={mapState.get(row.id) === "Connected" ? "circle green" : "circle red"}></div>
+                            <span>{mapState.get(row.id)}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <button type="button" className="btn btn-outline-success" onClick={() => onClickConnectors(row.id.toString())}><PiPlugCharging className='icon'/> Conectores</button>
+                        </td>
+                        <td>
+                          <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
+                        </td>
+                        <td>
+                          <button type="button" className="btn btn-outline-danger"><BiTrash className='icon'/> Eliminar</button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8}>No hay datos disponibles</td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8}>No hay datos disponibles</td>
-                  </tr>
-                )}
-              
-            </tbody>
-          </Table>
-        </div>
-    
-      </div>  
+                  )}
+                
+              </tbody>
+            </Table>
+          </div>
+
+          <div className="pagination">
+            <div className="pagination_info">
+                <label>Filas por página:</label>
+                <input type="number" value={perPage} className="form-control" onChange={handlePerPageChange} min={1} max={filteredData.length - endIndex === 0 ? 1 : filteredData.length}/>
+            </div>
+            <div className="pagination_info">
+                {endIndex === startIndex ? startIndex : startIndex + 1} - {endIndex} de {filteredData.length}
+            </div>
+            <div className="pagination_control">
+                <button type="button" className="btn btn-outline-secondary left" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} > &lt;</button>
+                <button type="button" className="btn btn-outline-secondary" onClick={() => handlePageChange(currentPage + 1)} disabled={endIndex >= filteredData.length}>&gt;</button>
+            </div>
+          </div>
+      
+        </div> 
+
+      </div>
+      <MyModal modalData={modalData} onHide={onHideModal}/>
     </>
   );
 }

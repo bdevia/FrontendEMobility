@@ -1,15 +1,23 @@
-.my-div{
-    max-width: 1600px;
-    margin: 5% auto;
+.my-rest-space {
+    margin-left: 260px;
+    display: flex; /* Utiliza flexbox */
+    justify-content: center; /* Centra horizontalmente */
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+  }
+  
+.my-div {
+    flex: 1;
+    max-width: 1500px;
+    height: max-content;
+    margin: 100px 15px 100px 15px;
     padding: 30px;
-    --bs-bg-opacity: 1;
-    background-color: rgba(var(--bs-tertiary-bg-rgb),var(--bs-bg-opacity))!important;
+    background-color: #f9f9f9;
 }
 
 .header_table{
     display: flex;
     align-items: flex-end; 
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .title_container{
@@ -25,8 +33,10 @@
 
 
 .scrollable_tbody{
-    height: 420px !important; 
+    height: 450px !important; 
     overflow-y: auto;
+    background-color: white;
+    padding: 10px;
 }
 
 .pagination{

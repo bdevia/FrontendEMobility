@@ -28,7 +28,7 @@ export const MyNavbar = () => {
   return (
     <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
         <Container className='my-container'>
-            <Navbar.Brand href="/home"><img className="logo-nav" src="../img/logo-dark.png" alt="Logo de navbar"/></Navbar.Brand>
+            <Navbar.Brand href="/home"><img className="logo-nav" src="/img/logo-dark.png" alt="Logo de navbar"/></Navbar.Brand>
             <Navbar.Toggle aria-controls="responsive-navbar-nav" />
             <Navbar.Collapse id="responsive-navbar-nav my-custom-collapse">
                 <Nav className="me-auto my-list-a">
