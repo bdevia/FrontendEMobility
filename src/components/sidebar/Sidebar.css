@@ -1,0 +1,37 @@
+.my-sidebar{
+    width: 260px;
+    height: 100vh; /* Ajusta la altura según sea necesario */
+    padding: 25px;
+    float: left;
+}
+
+.logo-nav{
+    width: 100%;
+}
+
+.navbar-nav{
+    width: 100%;
+    text-align: left;
+}
+
+.nav-link{
+    padding-left: 10px !important;
+}
+
+.my-end{
+    width: 100%;
+    text-align: left;
+    padding-left: 10px !important;
+}
+
+.hr-line {
+    border: none;
+    border-top: 1px solid #000;
+    margin: 10px;
+    padding-block: 5px;
+}
+
+.my-icon{
+    margin-top: -4px;
+    margin-right: 4px;
+}

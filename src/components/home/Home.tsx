@@ -1,11 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Table } from 'react-bootstrap';
 import './Home.css'
-import { MyNavbar } from '../navbar/Navbar';
-import { ArrayInputData } from '../../interfaces/Table';
+import { ArrayInputData, InputData } from '../../interfaces/Table';
 import RequestHandler from '../../services/RequestHandler';
 import { User } from '../../interfaces/User';
+import { BiTrash } from 'react-icons/bi';
+import { LiaPlusCircleSolid } from "react-icons/lia";
+import { RiInformationLine } from "react-icons/ri";
+import { PiPlugCharging } from "react-icons/pi";
+import { ModalInterface } from '../../interfaces/Modal';
+import MyModal from '../modal/Modal';
+import { MySidebar } from '../sidebar/Sidebar';
+
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -25,13 +32,21 @@ export const Home = () => {
       const fetchData = async () => {
         try {
           const response = await RequestHandler.sendRequet('GET', '/chargePoint/read', userData.token, null);
-          if(response.status === 200) {
+          if(response.status === 200){
             setChargePoints({
               data: response.data
             });
-          } 
-          else {
-            navigate('/user/auth');
+
+            const newMap = new Map(mapState);
+            response.data.forEach((row: InputData) =>{
+              newMap.set(row.id, row.status);
+            }); 
+            setMapState(newMap);
+            setPerPage(response.data.length);
+          }
+          else if(response.status === 406){
+            sessionStorage.clear();
+            setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
           }
         }
         catch(error){
@@ -44,8 +59,15 @@ export const Home = () => {
         const eventSource = new EventSource('http://localhost:8080/api/sse/events');
 
         eventSource.onmessage = (event) => {
-          const newEvent = JSON.parse(event.data);
-          console.log("evento: ", newEvent);
+          const data = JSON.parse(event.data);
+          console.log(data);
+          if(data.event === 'ConnectionStatus'){
+            setMapState(prevState => {
+              const newMap = new Map(prevState);
+              newMap.set(data.chargePointId, data.status);
+              return newMap;
+            });
+          }
         };
 
         eventSource.onerror = (error) => {
@@ -66,64 +88,137 @@ export const Home = () => {
 
   const [user, setUser] = useState<User>({ idTag: "", username: "", typeUser: "", token: "" });
   const [chargePoints, setChargePoints] = useState<ArrayInputData>({ data: [] });
+  const [mapState, setMapState] = useState<Map<string, string>>(new Map());
+
+  const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: ""});
+
+  const [searchText, setSearchText] = useState<string>('');
+
+  const [perPage, setPerPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredData = chargePoints.data.filter((row) =>
+    Object.values(row).some(
+      (value) =>
+        typeof value === 'string' &&
+        value.toLowerCase().startsWith(searchText.toLowerCase())
+    )
+  );
+
+  const startIndex = (currentPage - 1) * perPage;
+  const endIndex = Math.min(startIndex + perPage, filteredData.length);
+
+  const filteredDataInterval = filteredData.slice(startIndex, endIndex);
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+  };
+
+  const handlePerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setPerPage(Number(event.target.value));
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const onHideModal = () => {
+    setModalData(prevState => ({
+      ...prevState,
+      show: false
+    }));
+    navigate('/user/auth');
+  };
+
+  const onClickConnectors = (id: string) =>{
+    navigate(`/chargePoint/${id}/connectors`);
+  }
 
   return (
     <>
-      <MyNavbar/>
+      <MySidebar/>
 
-       <div className='my-div'>
+      <div className='my-rest-space'>
 
-      <div className='header_table'>
-          <div className="title_container">
-              <h5>Puntos de Carga Registrados</h5>
+        <div className='my-div'>
+
+          <div className='header_table'>
+              <div className="title_container">
+                  <h5>Puntos de Carga Registrados</h5>
+              </div>
+              <div className="controls_container">
+                  <button type='button' className="btn btn-outline-success"><LiaPlusCircleSolid className='icon'/> New ChargePoint</button>
+                  <input type="text" className="form-control" placeholder="Buscar" value={searchText} onChange={handleSearchChange}/>
+              </div>
           </div>
-          <div className="controls_container">
-              <button type='button' className="btn btn-outline-success">Opciones</button>
-              <input type="text" className="form-control" placeholder="Buscar" defaultValue=""/>
-          </div>
-      </div>
 
-      <div className='scrollable_tbody'>
-        <Table striped>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Marca</th>
-              <th>Tipo Conexión</th>
-              <th>Sockets</th>
-              <th>Estado</th>
-              <th>Visualizar</th>
-              <th>Editar</th>
-              <th>Eliminar</th>
-            </tr>
-          </thead>
-          <tbody > 
-              {chargePoints.data && chargePoints.data.length > 0 ? (
-                chargePoints.data.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.id}</td>
-                    <td>{row.vendor}</td>
-                    <td>{row.connection_type}</td>
-                    <td>{row.connectors}</td>
-                    <th>Estado</th>
-                    <td><button type="button" className="btn btn-outline-success">Visualizar</button></td>
-                    <td><button type="button" className="btn btn-outline-primary">Editar</button></td>
-                    <td><button type="button" className="btn btn-outline-danger">Eliminar</button></td>
-                  </tr>
-                ))
-              ) : (
+          <div className='scrollable_tbody'>
+            <Table striped responsive>
+              <thead>
                 <tr>
-                  <td colSpan={8}>No hay datos disponibles</td>
+                  <th>Device</th>
+                  <th>Marca</th>
+                  <th>Tipo Conexión</th>
+                  <th>Sockets</th>
+                  <th>Estado</th>
+                  <th>Conectores</th>
+                  <th>Detalles</th>
+                  <th>Eliminar</th>
                 </tr>
-              )}
-            
-          </tbody>
-        </Table>
+              </thead>
+              <tbody > 
+                  {chargePoints.data && chargePoints.data.length > 0 ? (
+                    filteredDataInterval.map((row, index) => (
+                      <tr key={index}>
+                        <td>{row.id}</td>
+                        <td>{row.vendor}</td>
+                        <td>{row.connection_type}</td>
+                        <td>{row.connectors}</td>
+                        <td>
+                          <div className="status-container">
+                            <div className={mapState.get(row.id) === "Connected" ? "circle green" : "circle red"}></div>
+                            <span>{mapState.get(row.id)}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <button type="button" className="btn btn-outline-success" onClick={() => onClickConnectors(row.id.toString())}><PiPlugCharging className='icon'/> Conectores</button>
+                        </td>
+                        <td>
+                          <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
+                        </td>
+                        <td>
+                          <button type="button" className="btn btn-outline-danger"><BiTrash className='icon'/> Eliminar</button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8}>No hay datos disponibles</td>
+                    </tr>
+                  )}
+                
+              </tbody>
+            </Table>
+          </div>
+
+          <div className="pagination">
+            <div className="pagination_info">
+                <label>Filas por página:</label>
+                <input type="number" value={perPage} className="form-control" onChange={handlePerPageChange} min={1} max={filteredData.length - endIndex === 0 ? 1 : filteredData.length}/>
+            </div>
+            <div className="pagination_info">
+                {endIndex === startIndex ? startIndex : startIndex + 1} - {endIndex} de {filteredData.length}
+            </div>
+            <div className="pagination_control">
+                <button type="button" className="btn btn-outline-secondary left" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} > &lt;</button>
+                <button type="button" className="btn btn-outline-secondary" onClick={() => handlePageChange(currentPage + 1)} disabled={endIndex >= filteredData.length}>&gt;</button>
+            </div>
+          </div>
+      
+        </div> 
+
       </div>
-    
-    </div>  
-
-
+      <MyModal modalData={modalData} onHide={onHideModal}/>
     </>
   );
 }

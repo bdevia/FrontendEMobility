@@ -1,4 +1,4 @@
-import React, { useState} from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Login.css';
@@ -8,6 +8,13 @@ import MyModal from '../modal/Modal';
 
 export const Login = () => {
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const user = sessionStorage.getItem("user");
+        if(user){
+            navigate('/home');
+        }
+    }, [navigate]);
 
     const [credentials, setCredentials] = useState<{username: string; password: string}>({
         username: '',

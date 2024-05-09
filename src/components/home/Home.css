@@ -1,41 +1,43 @@
-.my-div{
-    max-width: 1600px;
-    margin: 5% auto;
+.my-rest-space {
+    margin-left: 260px;
+    display: flex; /* Utiliza flexbox */
+    justify-content: center; /* Centra horizontalmente */
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+  }
+  
+.my-div {
+    flex: 1;
+    max-width: 1500px;
+    height: max-content;
+    margin: 100px 15px 100px 15px;
     padding: 30px;
-    --bs-bg-opacity: 1;
-    background-color: rgba(var(--bs-tertiary-bg-rgb),var(--bs-bg-opacity))!important;
+    background-color: #f9f9f9;
 }
 
 .header_table{
     display: flex;
     align-items: flex-end; 
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .title_container{
     flex: 1;
 }
 
-.controls_container{
-    display: flex;
-    align-items: flex-end; 
-    gap: 20px;
-}
-
-.my-table{
-    margin: 0;
-}
-
-.scrollable_tbody{
-    height: 420px !important; 
-    overflow-y: auto;
-}
-
-thead th {
-    position: sticky;
-    top: 0;
+.controls_container {
+    display: grid;
+    grid-template-columns: auto auto; /* Dos columnas de ancho automático */
+    align-items: center; /* Centra verticalmente los elementos */
+    gap: 15px; /* Espacio entre los elementos */
   }
 
+
+.scrollable_tbody{
+    height: 450px !important; 
+    overflow-y: auto;
+    background-color: white;
+    padding: 10px;
+}
 
 .pagination{
     justify-content: right;
@@ -64,4 +66,29 @@ thead th {
 .pagination_control{
     display: flex;
     align-items: center;
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+  }
+  
+.circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 26%;
+    margin-right: 8px;
+}
+
+.green {
+    background-color: green;
+}
+
+.red {
+    background-color: red;
+}
+  
+.icon {
+    margin-bottom: 4px;
+
 }
