@@ -3,7 +3,7 @@ import { Navbar, Nav, Dropdown, Container, NavDropdown } from 'react-bootstrap';
 import { IoHomeOutline } from "react-icons/io5";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { GoOrganization } from "react-icons/go";
-import { PiBuildingOffice } from "react-icons/pi";
+import { PiBuildingOffice, PiMapPinLine } from "react-icons/pi";
 import { FaRegUserCircle } from "react-icons/fa";
 import { FiUsers } from "react-icons/fi";
 import { useState, useEffect } from 'react';
@@ -37,7 +37,7 @@ export const MySidebar = () => {
         <hr className="my-2 w-100 hr-line"/> 
         <Nav className="flex-column mb-auto my-nav">
             <Nav.Item>
-                <Nav.Link href="#"><IoHomeOutline className='my-icon'/> Home</Nav.Link>
+                <Nav.Link href="/home"><IoHomeOutline className='my-icon'/> Home</Nav.Link>
             </Nav.Item>
             <Nav.Item>
                 <Nav.Link href="#"><AiOutlineDashboard className='my-icon'/> Dashboard</Nav.Link>
@@ -50,6 +50,9 @@ export const MySidebar = () => {
             </Nav.Item>
             <Nav.Item>
                 <Nav.Link href="#"><FiUsers className='my-icon'/> Usuarios</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+                <Nav.Link href="#"><PiMapPinLine className='my-icon'/> Mapa</Nav.Link>
             </Nav.Item>
         </Nav>
         <hr className="my-2 w-100 hr-line"/> 

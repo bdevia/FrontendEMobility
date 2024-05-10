@@ -3,11 +3,11 @@
     display: flex; /* Utiliza flexbox */
     justify-content: center; /* Centra horizontalmente */
     height: 100vh; /* Ocupa toda la altura de la pantalla */
-  }
+}
   
 .my-div {
     flex: 1;
-    max-width: 1500px;
+    max-width: 95%;
     height: max-content;
     margin: 100px 15px 100px 15px;
     padding: 30px;
