@@ -9,3 +9,15 @@ export interface InputData{
 export interface ArrayInputData{
     data: InputData[];
 }
+
+export interface ConnectorData{
+    id: number;
+    number_connector: number;
+    status: string;
+    sizeReservationQueue: number;
+    idTagReservationInProgress: string;
+}
+
+export interface ArrayConnectorData{
+    data: ConnectorData[];
+}

@@ -12,6 +12,7 @@ import { PiPlugCharging } from "react-icons/pi";
 import { ModalInterface } from '../../interfaces/Modal';
 import MyModal from '../modal/Modal';
 import { MySidebar } from '../sidebar/Sidebar';
+import { MapState } from '../../interfaces/MapState';
 
 
 export const Home = () => {
@@ -39,7 +40,7 @@ export const Home = () => {
 
             const newMap = new Map(mapState);
             response.data.forEach((row: InputData) =>{
-              newMap.set(row.id, row.status);
+              newMap.set(row.id, {status: row.status, date: new Date()})
             }); 
             setMapState(newMap);
             setPerPage(response.data.length);
@@ -64,7 +65,7 @@ export const Home = () => {
           if(data.event === 'ConnectionStatus'){
             setMapState(prevState => {
               const newMap = new Map(prevState);
-              newMap.set(data.chargePointId, data.status);
+              newMap.set(data.chargePointId, {status: data.status, date: new Date()});
               return newMap;
             });
           }
@@ -88,7 +89,7 @@ export const Home = () => {
 
   const [user, setUser] = useState<User>({ idTag: "", username: "", typeUser: "", token: "" });
   const [chargePoints, setChargePoints] = useState<ArrayInputData>({ data: [] });
-  const [mapState, setMapState] = useState<Map<string, string>>(new Map());
+  const [mapState, setMapState] = useState<Map<string, MapState>>(new Map());
 
   const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: ""});
 
@@ -159,8 +160,8 @@ export const Home = () => {
                   <th>Device</th>
                   <th>Marca</th>
                   <th>Tipo Conexión</th>
-                  <th>Sockets</th>
                   <th>Estado</th>
+                  <th>Actualización</th>
                   <th>Conectores</th>
                   <th>Detalles</th>
                   <th>Eliminar</th>
@@ -173,13 +174,13 @@ export const Home = () => {
                         <td>{row.id}</td>
                         <td>{row.vendor}</td>
                         <td>{row.connection_type}</td>
-                        <td>{row.connectors}</td>
                         <td>
                           <div className="status-container">
-                            <div className={mapState.get(row.id) === "Connected" ? "circle green" : "circle red"}></div>
-                            <span>{mapState.get(row.id)}</span>
+                            <div className={mapState.get(row.id)?.status === "Connected" ? "circle green" : "circle red"}></div>
+                            <span>{mapState.get(row.id)?.status}</span>
                           </div>
                         </td>
+                        <td>{mapState.get(row.id)?.date ? mapState.get(row.id)?.date.toLocaleString().replace(',', '') : "Sin Información"}</td>
                         <td>
                           <button type="button" className="btn btn-outline-success" onClick={() => onClickConnectors(row.id.toString())}><PiPlugCharging className='icon'/> Conectores</button>
                         </td>
@@ -191,7 +192,7 @@ export const Home = () => {
                         </td>
                       </tr>
                     ))
-                  ) : (
+                    ) : (
                     <tr>
                       <td colSpan={8}>No hay datos disponibles</td>
                     </tr>
