@@ -18,76 +18,6 @@ import { MapState } from '../../interfaces/MapState';
 export const Home = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-
-    const userData = {
-      idTag: sessionStorage.getItem("idTag"),
-      username: sessionStorage.getItem("user"),
-      typeUser: sessionStorage.getItem("typeUser"),
-      token: sessionStorage.getItem("token")
-    };
-    setUser(userData);
-
-    if(userData){
-
-      const fetchData = async () => {
-        try {
-          const response = await RequestHandler.sendRequet('GET', '/chargePoint/read', userData.token, null);
-          if(response.status === 200){
-            setChargePoints({
-              data: response.data
-            });
-
-            const newMap = new Map(mapState);
-            response.data.forEach((row: InputData) =>{
-              newMap.set(row.id, {status: row.status, date: new Date()})
-            }); 
-            setMapState(newMap);
-            setPerPage(response.data.length);
-          }
-          else if(response.status === 406){
-            sessionStorage.clear();
-            setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
-          }
-        }
-        catch(error){
-          console.error(error);
-        }
-
-      };
-
-      const listenSse = () => {
-        const eventSource = new EventSource('http://localhost:8080/api/sse/events');
-
-        eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          console.log(data);
-          if(data.event === 'ConnectionStatus'){
-            setMapState(prevState => {
-              const newMap = new Map(prevState);
-              newMap.set(data.chargePointId, {status: data.status, date: new Date()});
-              return newMap;
-            });
-          }
-        };
-
-        eventSource.onerror = (error) => {
-          console.error('Error de EventSource: ', error);
-          eventSource.close();
-        };
-
-        return () => {
-          eventSource.close();
-        };
-
-      };
-
-      fetchData();
-      listenSse();
-    }
-  }, [navigate]);
-
-  const [user, setUser] = useState<User>({ idTag: "", username: "", typeUser: "", token: "" });
   const [chargePoints, setChargePoints] = useState<ArrayInputData>({ data: [] });
   const [mapState, setMapState] = useState<Map<string, MapState>>(new Map());
 
@@ -135,6 +65,62 @@ export const Home = () => {
     navigate(`/chargePoint/${id}/connectors`);
   }
 
+  useEffect(() => {
+    const userToken = sessionStorage.getItem("token");
+    const fetchData = async () => {
+      try {
+        const response = await RequestHandler.sendRequet('GET', '/chargePoint/read', userToken, null);
+        if(response.status === 200){
+          setChargePoints({
+            data: response.data
+          });
+  
+          const newMap = new Map(mapState);
+          response.data.forEach((row: InputData) =>{
+            newMap.set(row.id, {status: row.status, timestamp: row.timestamp})
+          }); 
+          setMapState(newMap);
+          setPerPage(response.data.length);
+        }
+        else if(response.status === 406){
+          sessionStorage.clear();
+          setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
+        }
+      }
+      catch(error){
+        console.error(error);
+      }
+    };
+  
+    fetchData(); // Ejecutar fetchData una vez al montar el componente
+  
+    const eventSource = new EventSource('http://localhost:8080/api/sse/events');
+  
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data);
+      if(data.event === 'ConnectionStatus'){
+        setMapState(prevState => {
+          const newMap = new Map(prevState);
+          newMap.set(data.chargePointId, {status: data.status, timestamp: data.timestamp});
+          return newMap;
+        });
+      }
+    };
+  
+    eventSource.onerror = (error) => {
+      console.error('Error de EventSource: ', error);
+      eventSource.close();
+    };
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+
+  }, []);
+
   return (
     <>
       <MySidebar/>
@@ -161,7 +147,7 @@ export const Home = () => {
                   <th>Marca</th>
                   <th>Tipo Conexión</th>
                   <th>Estado</th>
-                  <th>Actualización</th>
+                  <th>Ultimo Evento</th>
                   <th>Conectores</th>
                   <th>Detalles</th>
                   <th>Eliminar</th>
@@ -180,7 +166,7 @@ export const Home = () => {
                             <span>{mapState.get(row.id)?.status}</span>
                           </div>
                         </td>
-                        <td>{mapState.get(row.id)?.date ? mapState.get(row.id)?.date.toLocaleString().replace(',', '') : "Sin Información"}</td>
+                        <td>{mapState.get(row.id)?.timestamp}</td>
                         <td>
                           <button type="button" className="btn btn-outline-success" onClick={() => onClickConnectors(row.id.toString())}><PiPlugCharging className='icon'/> Conectores</button>
                         </td>

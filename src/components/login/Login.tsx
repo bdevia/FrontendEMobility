@@ -38,9 +38,7 @@ export const Login = () => {
     const handleSumit = async () => {
         try {
             const response = await RequestHandler.sendRequet('POST', '/user/auth', null, credentials);
-            console.log(response);
             if(response.status === 200){
-                console.log("funciona")
                 sessionStorage.setItem("idTag", response.data.id);
                 sessionStorage.setItem("typeUser", response.data.type_user);
                 sessionStorage.setItem("user", credentials.username);
