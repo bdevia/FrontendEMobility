@@ -1,4 +1,10 @@
 export interface MapState{
     status: string,
-    date: Date,
+    timestamp: string,
+}
+
+export interface MapStateConnector{
+    status: string,
+    errorCode: string,
+    timestamp: string,
 }

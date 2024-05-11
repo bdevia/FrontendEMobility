@@ -2,8 +2,8 @@ export interface InputData{
     id: string;
     vendor: string;
     connection_type: string;
-    connectors: number;
     status: string;
+    timestamp: string;
 }
 
 export interface ArrayInputData{
@@ -14,6 +14,8 @@ export interface ConnectorData{
     id: number;
     number_connector: number;
     status: string;
+    errorCode: string;
+    timestamp: string;
     sizeReservationQueue: number;
     idTagReservationInProgress: string;
 }

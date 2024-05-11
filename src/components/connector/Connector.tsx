@@ -7,7 +7,7 @@ import { User } from '../../interfaces/User';
 import RequestHandler from '../../services/RequestHandler';
 import { ModalInterface } from '../../interfaces/Modal';
 import MyModal from '../modal/Modal';
-import { MapState } from '../../interfaces/MapState';
+import { MapStateConnector } from '../../interfaces/MapState';
 
 export const Connector = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export const Connector = () => {
 
   const [user, setUser] = useState<User>({ idTag: "", username: "", typeUser: "", token: "" });
   const [connectors, setConnectors] = useState<ArrayConnectorData>({data: []});
-  const [mapState, setMapState] = useState<Map<number, MapState>>(new Map());
+  const [mapState, setMapState] = useState<Map<number, MapStateConnector>>(new Map());
 
   const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: ""});
 
@@ -47,7 +47,7 @@ export const Connector = () => {
 
           const newMap = new Map(mapState);
           response.data.forEach((row: ConnectorData) => {
-            newMap.set(row.number_connector, {status: row.status, date: new Date()})
+            newMap.set(row.number_connector, {status: row.status, errorCode: row.errorCode, timestamp: row.timestamp})
           });
           setMapState(newMap);
 
@@ -72,7 +72,7 @@ export const Connector = () => {
           if(data.chargePointId === id){
             setMapState(prevState => {
               const newMap = new Map(prevState);
-              newMap.set(data.connectorId, {status: data.status, date: new Date()});
+              newMap.set(data.connectorId, {status: data.status, errorCode: data.errorCode, timestamp: data.timestamp});
               return newMap;
             });
           }
@@ -119,7 +119,8 @@ export const Connector = () => {
               <tr>
                 <th>N°</th>
                 <th>Estado</th>
-                <th>Actualización</th>
+                <th>Error Code</th>
+                <th>Ultimo Evento</th>
                 <th>Cola de Espera</th>
               </tr>
             </thead>
@@ -142,7 +143,8 @@ export const Connector = () => {
                         <span>{mapState.get(row.number_connector)?.status}</span>
                       </div>
                     </td>
-                    <td>{mapState.get(row.number_connector)?.date ? mapState.get(row.number_connector)?.date.toLocaleString().replace(',', '') : "Sin Información"}</td>
+                    <td>{mapState.get(row.number_connector)?.errorCode}</td>
+                    <td>{mapState.get(row.number_connector)?.timestamp}</td>
                     <td>{row.sizeReservationQueue > 0 ? `${row.sizeReservationQueue} Usuarios` : 'Sin Usuarios'}</td>
                   </tr>
                 ))
