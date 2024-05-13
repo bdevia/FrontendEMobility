@@ -8,6 +8,7 @@ import RequestHandler from '../../services/RequestHandler';
 import { ModalInterface } from '../../interfaces/Modal';
 import MyModal from '../modal/Modal';
 import { MapStateConnector } from '../../interfaces/MapState';
+import './Connector.css'
 
 export const Connector = () => {
   const navigate = useNavigate();
@@ -18,6 +19,15 @@ export const Connector = () => {
   const [mapState, setMapState] = useState<Map<number, MapStateConnector>>(new Map());
 
   const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: ""});
+
+  const mapStyle: Map<string, string> = new Map([
+    ["Disconnected", "red"],
+    ["Available", "green"],
+    ["Reserved", "aquamarine"],
+    ["Preparing", "blue-blinking"],
+    ["Charging", "blue"],
+    ["Finishing", "blue-blinking"]
+  ]);
 
   const onHideModal = () => {
     setModalData(prevState => ({
@@ -93,7 +103,7 @@ export const Connector = () => {
     fetchData();
     listenSse();
   
-  }, [navigate]);
+  }, []);
 
   return (
    <>
@@ -131,15 +141,7 @@ export const Connector = () => {
                     <td>{row.number_connector}</td>
                     <td>
                       <div className="status-container">
-                        <div className={
-                          mapState.get(row.number_connector)?.status === "Disconnected" ? "circle red" :
-                          mapState.get(row.number_connector)?.status === "Available" ? "circle green" :
-                          mapState.get(row.number_connector)?.status === "Reserved" ? "circle yellow" :
-                          mapState.get(row.number_connector)?.status === "Preparing" ? "circle blue-blinking" :
-                          mapState.get(row.number_connector)?.status === "Charging" ? "circle blue" :
-                          mapState.get(row.number_connector)?.status === "Finishing" ? "circle blue-blinking" :
-                          "circle"
-                        }></div>
+                      <div className={mapState.get(row.number_connector)?.status !== undefined ? "circle " + mapStyle.get(mapState.get(row.number_connector)!.status) : ""}></div>
                         <span>{mapState.get(row.number_connector)?.status}</span>
                       </div>
                     </td>

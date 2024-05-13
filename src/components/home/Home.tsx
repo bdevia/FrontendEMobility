@@ -4,7 +4,6 @@ import { Table } from 'react-bootstrap';
 import './Home.css'
 import { ArrayInputData, InputData } from '../../interfaces/Table';
 import RequestHandler from '../../services/RequestHandler';
-import { User } from '../../interfaces/User';
 import { BiTrash } from 'react-icons/bi';
 import { LiaPlusCircleSolid } from "react-icons/lia";
 import { RiInformationLine } from "react-icons/ri";
