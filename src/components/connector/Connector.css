@@ -28,7 +28,7 @@
 
 .blue-blinking {
     background-color: blue;
-    animation: blinking 1s infinite alternate;
+    animation: blinking 0.5s infinite alternate;
 }
 
 @keyframes blinking {

@@ -65,6 +65,7 @@ export const Home = () => {
   }
 
   useEffect(() => {
+    const userId = sessionStorage.getItem("idTag");
     const userToken = sessionStorage.getItem("token");
     const fetchData = async () => {
       try {
@@ -93,7 +94,7 @@ export const Home = () => {
   
     fetchData(); // Ejecutar fetchData una vez al montar el componente
   
-    const eventSource = new EventSource('http://localhost:8080/api/sse/events');
+    const eventSource = new EventSource(`http://localhost:8080/api/sse/events/${userId}`);
   
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -104,6 +105,10 @@ export const Home = () => {
           newMap.set(data.chargePointId, {status: data.status, timestamp: data.timestamp});
           return newMap;
         });
+      }
+      else if(data.event === 'ExpiredSession'){
+        sessionStorage.clear();
+        setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
       }
     };
   
