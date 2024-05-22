@@ -22,6 +22,7 @@ export const Connector = () => {
 
   const mapStyle: Map<string, string> = new Map([
     ["Disconnected", "red"],
+    ["Unavailable", "red"],
     ["Available", "green"],
     ["Reserved", "aquamarine"],
     ["Preparing", "blue-blinking"],
@@ -38,6 +39,7 @@ export const Connector = () => {
   };
 
   useEffect(() => {
+    const userId = sessionStorage.getItem("idTag");
     const userData = {
       idTag: sessionStorage.getItem("idTag"),
       username: sessionStorage.getItem("user"),
@@ -73,7 +75,7 @@ export const Connector = () => {
     };
 
     const listenSse = () => {
-      const eventSource = new EventSource('http://localhost:8080/api/sse/events');
+      const eventSource = new EventSource(`http://localhost:8080/api/sse/events/${userId}`);
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -85,6 +87,10 @@ export const Connector = () => {
               newMap.set(data.connectorId, {status: data.status, errorCode: data.errorCode, timestamp: data.timestamp});
               return newMap;
             });
+          }
+          else if(data.event === 'ExpiredSession'){
+            sessionStorage.clear();
+            setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
           }
         }
       };
