@@ -11,7 +11,7 @@ const MyModal: React.FC<ModalInput> = ({modalData, onHide}) =>{
                 {modalData.cause}
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="danger" onClick={onHide}>Close</Button>
+                <Button variant={modalData.variant} onClick={onHide}>Close</Button>
             </Modal.Footer>
         </Modal>
     )

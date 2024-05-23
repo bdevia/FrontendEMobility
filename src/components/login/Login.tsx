@@ -21,11 +21,7 @@ export const Login = () => {
         password: ''
     });
 
-    const [modalData, setModalData] = useState<ModalInterface>({
-        show: false,
-        title: '',
-        cause: ''
-    });
+    const [modalData, setModalData] = useState<ModalInterface>({show: false, title: '', cause: '', variant: ''});
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -46,11 +42,7 @@ export const Login = () => {
                 navigate('/home');
             }
             else{
-                setModalData({
-                    show: true, 
-                    title: "Fail Authentication", 
-                    cause: response.data.cause
-                });
+                setModalData({show: true, title: "Fail Authentication", cause: response.data.cause, variant: "danger"});
             }
         }
         catch(error){

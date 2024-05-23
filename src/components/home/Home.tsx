@@ -20,7 +20,7 @@ export const Home = () => {
   const [chargePoints, setChargePoints] = useState<ArrayInputData>({ data: [] });
   const [mapState, setMapState] = useState<Map<string, MapState>>(new Map());
 
-  const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: ""});
+  const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: "", variant: ""});
 
   const [searchText, setSearchText] = useState<string>('');
 
@@ -84,7 +84,7 @@ export const Home = () => {
         }
         else if(response.status === 406){
           sessionStorage.clear();
-          setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
+          setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
         }
       }
       catch(error){
@@ -108,7 +108,7 @@ export const Home = () => {
       }
       else if(data.event === 'ExpiredSession'){
         sessionStorage.clear();
-        setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
+        setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
       }
     };
   
