@@ -175,7 +175,7 @@ export const Home = () => {
                           <button type="button" className="btn btn-outline-success" onClick={() => onClickConnectors(row.id.toString())}><PiPlugCharging className='icon'/> Conectores</button>
                         </td>
                         <td>
-                          <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
+                          <button type="button" className="btn btn-outline-info"><RiInformationLine className='icon'/> Detalles</button>
                         </td>
                         <td>
                           <button type="button" className="btn btn-outline-danger"><BiTrash className='icon'/> Eliminar</button>

@@ -9,6 +9,9 @@ import { ModalInterface } from '../../interfaces/Modal';
 import MyModal from '../modal/Modal';
 import { MapStateConnector } from '../../interfaces/MapState';
 import './Connector.css'
+import { BiBookmarkAltPlus } from "react-icons/bi";
+import { MdOutlineNotStarted } from "react-icons/md";
+import { RiInformationLine } from "react-icons/ri";
 
 export const Connector = () => {
   const navigate = useNavigate();
@@ -111,6 +114,15 @@ export const Connector = () => {
   
   }, []);
 
+  const handleReservation = async () => {
+    try {
+       
+    }
+    catch(error){
+      
+    }
+  }
+
   return (
    <>
     <MySidebar/>
@@ -137,7 +149,10 @@ export const Connector = () => {
                 <th>Estado</th>
                 <th>Error Code</th>
                 <th>Ultimo Evento</th>
-                <th>Cola de Espera</th>
+                <th>En Espera</th>
+                <th>Reservación</th>
+                <th>Cargar Vehículo</th>
+                <th>Detalles</th>
               </tr>
             </thead>
             <tbody > 
@@ -154,6 +169,15 @@ export const Connector = () => {
                     <td>{mapState.get(row.number_connector)?.errorCode}</td>
                     <td>{mapState.get(row.number_connector)?.timestamp}</td>
                     <td>{row.sizeReservationQueue > 0 ? `${row.sizeReservationQueue} Usuarios` : 'Sin Usuarios'}</td>
+                    <td>
+                      <button type="button" className="btn btn-outline-primary"><BiBookmarkAltPlus className='icon'/> Reservar</button>
+                    </td>
+                    <td>
+                      <button type="button" className="btn btn-outline-success"><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
+                    </td>
+                    <td>
+                        <button type="button" className="btn btn-outline-info"><RiInformationLine className='icon'/> Detalles</button>
+                      </td>
                   </tr>
                 ))
               ) : (
