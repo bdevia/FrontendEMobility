@@ -9,6 +9,9 @@ import { ModalInterface } from '../../interfaces/Modal';
 import MyModal from '../modal/Modal';
 import { MapStateConnector } from '../../interfaces/MapState';
 import './Connector.css'
+import { BiBookmarkAltPlus } from "react-icons/bi";
+import { MdOutlineNotStarted } from "react-icons/md";
+import { RiInformationLine } from "react-icons/ri";
 
 export const Connector = () => {
   const navigate = useNavigate();
@@ -18,7 +21,7 @@ export const Connector = () => {
   const [connectors, setConnectors] = useState<ArrayConnectorData>({data: []});
   const [mapState, setMapState] = useState<Map<number, MapStateConnector>>(new Map());
 
-  const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: ""});
+  const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: "", variant: ""});
 
   const mapStyle: Map<string, string> = new Map([
     ["Disconnected", "red"],
@@ -30,12 +33,15 @@ export const Connector = () => {
     ["Finishing", "blue-blinking"]
   ]);
 
-  const onHideModal = () => {
+  const onHideModal = (title: string) => {
     setModalData(prevState => ({
       ...prevState,
       show: false
     }));
-    navigate('/user/auth');
+
+    if(title === "Session Expired"){
+      navigate('/user/auth');
+    }
   };
 
   useEffect(() => {
@@ -66,7 +72,7 @@ export const Connector = () => {
         }
         else if(response.status === 406){
           sessionStorage.clear();
-          setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
+          setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
         }
       }
       catch(error){
@@ -90,7 +96,7 @@ export const Connector = () => {
           }
           else if(data.event === 'ExpiredSession'){
             sessionStorage.clear();
-            setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again"});
+            setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
           }
         }
       };
@@ -110,6 +116,48 @@ export const Connector = () => {
     listenSse();
   
   }, []);
+
+  const handleReservation = async (connectorId: number) => {
+    try{
+      const body = {chargePointId: id, connectorId: connectorId};
+      const response = await RequestHandler.sendRequet("POST", "/reservation/new", user.token, body);
+      if(response.status === 200){
+        setModalData({show: true, title: "Successful Reservation", cause: "Your reservation has been processed correctly", variant: "primary"});
+      }
+      else{
+        handleModalResponse(response.status, response.data.status, response.data.cause);
+      }
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
+
+  const handleRemoteStartTransaction = async (connectorId: number) => {
+    try{
+      const body = {chargePointId: id, connectorId: connectorId};
+      const response = await RequestHandler.sendRequet("POST", "/remoteTransaction/start", user.token, body);
+      if(response.status === 200){
+        setModalData({show: true, title: "Starting Charging", cause: "Please connect the connector to start charging", variant: "primary"});
+      }
+      else{
+        handleModalResponse(response.status, response.data.status, response.data.cause);
+      }
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
+
+  const handleModalResponse = (status: number, title: string, cause: string) => {
+    if(status === 404){
+      setModalData({show: true, title: title, cause: cause, variant: "danger"});
+    }
+    else if(status === 406){
+      sessionStorage.clear();
+      setModalData({show: true, title: title, cause: "Your session has expired, please log in again", variant: "danger"});
+    }
+  }
 
   return (
    <>
@@ -137,7 +185,10 @@ export const Connector = () => {
                 <th>Estado</th>
                 <th>Error Code</th>
                 <th>Ultimo Evento</th>
-                <th>Cola de Espera</th>
+                <th>En Espera</th>
+                <th>Reservación</th>
+                <th>Cargar Vehículo</th>
+                <th>Detalles</th>
               </tr>
             </thead>
             <tbody > 
@@ -154,6 +205,15 @@ export const Connector = () => {
                     <td>{mapState.get(row.number_connector)?.errorCode}</td>
                     <td>{mapState.get(row.number_connector)?.timestamp}</td>
                     <td>{row.sizeReservationQueue > 0 ? `${row.sizeReservationQueue} Usuarios` : 'Sin Usuarios'}</td>
+                    <td>
+                      <button type="button" className="btn btn-outline-primary" onClick={() => handleReservation(row.number_connector)}><BiBookmarkAltPlus className='icon'/> Reservar</button>
+                    </td>
+                    <td>
+                      <button type="button" className="btn btn-outline-success" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
+                    </td>
+                    <td>
+                        <button type="button" className="btn btn-outline-info"><RiInformationLine className='icon'/> Detalles</button>
+                      </td>
                   </tr>
                 ))
               ) : (
@@ -168,7 +228,7 @@ export const Connector = () => {
       </div>
 
     </div>
-    <MyModal modalData={modalData} onHide={onHideModal}/>
+    <MyModal modalData={modalData} onHide={() => onHideModal(modalData.title)}/>
    </>
   )
 }

@@ -1,7 +1,8 @@
 export interface ModalInterface{
     show: boolean,
     title: string,
-    cause: string
+    cause: string,
+    variant: string
 }
 
 export interface ModalInput{
