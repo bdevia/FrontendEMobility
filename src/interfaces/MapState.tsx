@@ -6,5 +6,6 @@ export interface MapState{
 export interface MapStateConnector{
     status: string,
     errorCode: string,
+    sizeReservationQueue: number,
     timestamp: string,
 }

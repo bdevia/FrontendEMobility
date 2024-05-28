@@ -27,7 +27,7 @@ export const Connector = () => {
     ["Disconnected", "red"],
     ["Unavailable", "red"],
     ["Available", "green"],
-    ["Reserved", "aquamarine"],
+    ["Reserved", "yellow"],
     ["Preparing", "blue-blinking"],
     ["Charging", "blue"],
     ["Finishing", "blue-blinking"]
@@ -65,7 +65,7 @@ export const Connector = () => {
 
           const newMap = new Map(mapState);
           response.data.forEach((row: ConnectorData) => {
-            newMap.set(row.number_connector, {status: row.status, errorCode: row.errorCode, timestamp: row.timestamp})
+            newMap.set(row.number_connector, {status: row.status, errorCode: row.errorCode, sizeReservationQueue: row.sizeReservationQueue, timestamp: row.timestamp})
           });
           setMapState(newMap);
 
@@ -90,14 +90,14 @@ export const Connector = () => {
           if(data.chargePointId === id){
             setMapState(prevState => {
               const newMap = new Map(prevState);
-              newMap.set(data.connectorId, {status: data.status, errorCode: data.errorCode, timestamp: data.timestamp});
+              newMap.set(data.connectorId, {status: data.status, errorCode: data.errorCode, sizeReservationQueue: data.sizeReservationQueue, timestamp: data.timestamp});
               return newMap;
             });
           }
-          else if(data.event === 'ExpiredSession'){
-            sessionStorage.clear();
-            setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
-          }
+        }
+        else if(data.event === 'ExpiredSession'){
+          sessionStorage.clear();
+          setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
         }
       };
 
@@ -133,6 +133,22 @@ export const Connector = () => {
     }
   }
 
+  const handleCancelReservation = async () => {
+    try {
+      const response = await RequestHandler.sendRequet("POST", "/reservation/cancel", user.token, {chargePointId: id});
+      console.log(response);
+      if(response.status === 200){
+        setModalData({show: true, title: "successful reservation cancellation", cause: "Your cancellation has been processed correctly", variant: "primary"});
+      }
+      else{
+        handleModalResponse(response.status, response.data.status, response.data.cause);
+      }
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
+
   const handleRemoteStartTransaction = async (connectorId: number) => {
     try{
       const body = {chargePointId: id, connectorId: connectorId};
@@ -149,13 +165,29 @@ export const Connector = () => {
     }
   }
 
-  const handleModalResponse = (status: number, title: string, cause: string) => {
-    if(status === 404){
-      setModalData({show: true, title: title, cause: cause, variant: "danger"});
+  const handlerRemoteStopTransaction = async () => {
+    try {
+      const response = await RequestHandler.sendRequet("POST", "/remoteTransaction/stop", user.token, {chargePointId: id});
+      console.log(response);
+      if(response.status === 200){
+        setModalData({show: true, title: "Stopping Charging", cause: "Stopping charging, please wait a few seconds", variant: "primary"});
+      }
+      else{
+        handleModalResponse(response.status, response.data.status, response.data.cause);
+      }
     }
-    else if(status === 406){
+    catch(error){
+      console.error(error);
+    }
+  }
+
+  const handleModalResponse = (status: number, title: string, cause: string) => {
+    if(status === 406){
       sessionStorage.clear();
       setModalData({show: true, title: title, cause: "Your session has expired, please log in again", variant: "danger"});
+    }
+    else{
+      setModalData({show: true, title: title, cause: cause, variant: "danger"});
     }
   }
 
@@ -172,12 +204,11 @@ export const Connector = () => {
             <h5>Conectores de Cargador {id}</h5>
           </div>
           <div className="controls_container">
-            <button type='button' className="btn btn-outline-success"> ChargePoint</button>
             <input type="text" className="form-control" placeholder="Buscar" defaultValue=""/>
           </div>
         </div>
 
-        <div className='scrollable_tbody'>
+        <div className='scrollable_tbody connector'>
           <Table striped responsive>
             <thead>
               <tr>
@@ -204,15 +235,15 @@ export const Connector = () => {
                     </td>
                     <td>{mapState.get(row.number_connector)?.errorCode}</td>
                     <td>{mapState.get(row.number_connector)?.timestamp}</td>
-                    <td>{row.sizeReservationQueue > 0 ? `${row.sizeReservationQueue} Usuarios` : 'Sin Usuarios'}</td>
+                    <td>{mapState.get(row.number_connector)?.sizeReservationQueue ?? 0 > 0 ? `${mapState.get(row.number_connector)?.sizeReservationQueue} Usuarios` : 'Sin Usuarios'}</td>
                     <td>
                       <button type="button" className="btn btn-outline-primary" onClick={() => handleReservation(row.number_connector)}><BiBookmarkAltPlus className='icon'/> Reservar</button>
                     </td>
                     <td>
-                      <button type="button" className="btn btn-outline-success" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
+                      <button type="button" className="btn btn-outline-primary" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
                     </td>
                     <td>
-                        <button type="button" className="btn btn-outline-info"><RiInformationLine className='icon'/> Detalles</button>
+                        <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
                       </td>
                   </tr>
                 ))
@@ -224,9 +255,19 @@ export const Connector = () => {
             </tbody>
           </Table>
         </div>
+        <br/>
+
+        <div className='below_container'>
+          <div className='content'>
+            <h5></h5>
+          </div>
+          <div className='buttons'>
+            <button type='button' className="btn btn-outline-danger" onClick={() => handleCancelReservation()}> Cancelar Reservacion</button>
+            <button type='button' className="btn btn-outline-danger" onClick={() => handlerRemoteStopTransaction()}> Finalizar Carga</button>
+          </div>
+        </div>
 
       </div>
-
     </div>
     <MyModal modalData={modalData} onHide={() => onHideModal(modalData.title)}/>
    </>

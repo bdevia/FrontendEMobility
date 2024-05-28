@@ -4,3 +4,8 @@ export interface User{
     typeUser: string | null;
     token: string | null;
 }
+
+export interface UserState{
+    status: string;
+    turn: number;
+}

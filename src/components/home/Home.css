@@ -33,7 +33,7 @@
 
 
 .scrollable_tbody{
-    height: 450px !important; 
+    height: 450px; 
     overflow-y: auto;
     background-color: white;
     padding: 10px;
