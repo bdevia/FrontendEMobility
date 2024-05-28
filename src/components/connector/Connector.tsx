@@ -12,6 +12,7 @@ import './Connector.css'
 import { BiBookmarkAltPlus } from "react-icons/bi";
 import { MdOutlineNotStarted } from "react-icons/md";
 import { RiInformationLine } from "react-icons/ri";
+import SemiCircleGauge from '../gauges/SemiCircleGauge';
 
 export const Connector = () => {
   const navigate = useNavigate();
@@ -266,8 +267,10 @@ export const Connector = () => {
             <button type='button' className="btn btn-outline-danger" onClick={() => handlerRemoteStopTransaction()}> Finalizar Carga</button>
           </div>
         </div>
-
+            
+        <SemiCircleGauge label="CPU Usage" value={75} />
       </div>
+
     </div>
     <MyModal modalData={modalData} onHide={() => onHideModal(modalData.title)}/>
    </>
