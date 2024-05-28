@@ -1,3 +1,7 @@
+.connector{
+    height: max-content !important;
+}
+
 .status-container {
     display: flex;
     align-items: center;
@@ -18,8 +22,8 @@
     background-color: red;
 }
 
-.aquamarine {
-    background-color: aquamarine;
+.yellow {
+    background-color: #fde125;
 }
 
 .blue {
@@ -38,4 +42,26 @@
     to {
         opacity: 0;
     }
+}
+
+
+.below_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content h5 {
+    margin: 0 auto; /* Centra el h5 horizontalmente */
+}
+
+.buttons {
+    display: flex;
+    gap: 10px; /* Espacio entre botones */
 }
