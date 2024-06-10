@@ -9,8 +9,10 @@
   }
 
 .row{
-    width: 48vw;
+    width: 90%; /* Hacer el ancho relativo para ajustarse mejor a pantallas pequeñas */
+    max-width: 48vw;
     height: 53vh; /* Reducir la altura del contenedor principal */
+    max-height: max-content;
 }
 
 .col-md-6.p-0 {
@@ -45,6 +47,7 @@
 }
 
 .col-right{
+    width: 50%;
     height: 100%;
     background-color: white;
     padding: 0;

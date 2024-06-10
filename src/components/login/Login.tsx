@@ -33,7 +33,7 @@ export const Login = () => {
 
     const handleSumit = async () => {
         try {
-            const response = await RequestHandler.sendRequet('POST', '/user/auth', null, credentials);
+            const response = await RequestHandler.sendRequet('POST', '/business/user/auth', null, credentials);
             if(response.status === 200){
                 sessionStorage.setItem("idTag", response.data.id);
                 sessionStorage.setItem("typeUser", response.data.type_user);
@@ -64,7 +64,7 @@ export const Login = () => {
         <div className="row">
 
             <div className="col-md-6 p-0 col-left">
-                <div className="custom-img h-100 w-100"></div>
+                <div className="custom-img"></div>
                 <div className="image-text">
                     <h2>Fleishchmann IoT</h2>
                     <p>Soluciones Digitales</p>

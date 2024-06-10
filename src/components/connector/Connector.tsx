@@ -57,7 +57,7 @@ export const Connector = () => {
     const fetchData = async () => {
       try {
         const body: {chargePointId?: string} = {chargePointId: id};
-        const response = await RequestHandler.sendRequet("POST", '/chargePoint/connector/read', userData.token, body);
+        const response = await RequestHandler.sendRequet("POST", '/business/chargePoint/connector/read', userData.token, body);
         if(response.status === 200){
           setConnectors({
             data: response.data
@@ -120,7 +120,7 @@ export const Connector = () => {
   const handleReservation = async (connectorId: number) => {
     try{
       const body = {chargePointId: id, connectorId: connectorId};
-      const response = await RequestHandler.sendRequet("POST", "/reservation/new", user.token, body);
+      const response = await RequestHandler.sendRequet("POST", "/business/reservation/new", user.token, body);
       if(response.status === 200){
         setModalData({show: true, title: "Successful Reservation", cause: "Your reservation has been processed correctly", variant: "primary"});
       }
@@ -135,7 +135,7 @@ export const Connector = () => {
 
   const handleCancelReservation = async () => {
     try {
-      const response = await RequestHandler.sendRequet("POST", "/reservation/cancel", user.token, {chargePointId: id});
+      const response = await RequestHandler.sendRequet("POST", "/business/reservation/cancel", user.token, {chargePointId: id});
       console.log(response);
       if(response.status === 200){
         setModalData({show: true, title: "successful reservation cancellation", cause: "Your cancellation has been processed correctly", variant: "primary"});
@@ -152,7 +152,7 @@ export const Connector = () => {
   const handleRemoteStartTransaction = async (connectorId: number) => {
     try{
       const body = {chargePointId: id, connectorId: connectorId};
-      const response = await RequestHandler.sendRequet("POST", "/remoteTransaction/start", user.token, body);
+      const response = await RequestHandler.sendRequet("POST", "/business/remoteTransaction/start", user.token, body);
       if(response.status === 200){
         setModalData({show: true, title: "Starting Charging", cause: "Please connect the connector to start charging", variant: "primary"});
       }
@@ -167,7 +167,7 @@ export const Connector = () => {
 
   const handlerRemoteStopTransaction = async () => {
     try {
-      const response = await RequestHandler.sendRequet("POST", "/remoteTransaction/stop", user.token, {chargePointId: id});
+      const response = await RequestHandler.sendRequet("POST", "/business/remoteTransaction/stop", user.token, {chargePointId: id});
       console.log(response);
       if(response.status === 200){
         setModalData({show: true, title: "Stopping Charging", cause: "Stopping charging, please wait a few seconds", variant: "primary"});
@@ -243,8 +243,8 @@ export const Connector = () => {
                       <button type="button" className="btn btn-outline-primary" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
                     </td>
                     <td>
-                        <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
-                      </td>
+                      <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
+                    </td>
                   </tr>
                 ))
               ) : (

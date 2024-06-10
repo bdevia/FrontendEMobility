@@ -17,7 +17,7 @@ class RequestHandler{
     }*/
 
     public static async sendRequet(method: string, endPoint: string, authToken: string | null, body: any): Promise<{data: any, status: number}>{
-        const url = `http://${RequestHandler.host}:${RequestHandler.port}/api/business${endPoint}`;
+        const url = `http://${RequestHandler.host}:${RequestHandler.port}/api${endPoint}`;
         console.log(url);
         try {
             let response;
