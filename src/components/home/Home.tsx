@@ -4,7 +4,7 @@ import { Table } from 'react-bootstrap';
 import './Home.css'
 import { ArrayInputData, InputData } from '../../interfaces/Table';
 import RequestHandler from '../../services/RequestHandler';
-import { BiTrash } from 'react-icons/bi';
+import { GrPowerReset } from "react-icons/gr";
 import { LiaPlusCircleSolid } from "react-icons/lia";
 import { RiInformationLine } from "react-icons/ri";
 import { PiPlugCharging } from "react-icons/pi";
@@ -69,7 +69,7 @@ export const Home = () => {
     const userToken = sessionStorage.getItem("token");
     const fetchData = async () => {
       try {
-        const response = await RequestHandler.sendRequet('GET', '/chargePoint/read', userToken, null);
+        const response = await RequestHandler.sendRequet('GET', '/business/chargePoint/read', userToken, null);
         if(response.status === 200){
           setChargePoints({
             data: response.data
@@ -125,6 +125,20 @@ export const Home = () => {
 
   }, []);
 
+  const handleReset = async (id: string) => {
+    try {
+      const body = {chargePointId: id, type: "hard"};
+      const response = await RequestHandler.sendRequet("POST", "/v16/restart/chargepoint", null, body);
+      console.log(response);
+      if(response.status !== 200){
+        setModalData({show: true, title: response.data.status, cause: response.data.cause, variant: "danger"});
+      }
+    }
+    catch(error){
+      console.error(error);  
+    }
+  }
+
   return (
     <>
       <MySidebar/>
@@ -154,7 +168,7 @@ export const Home = () => {
                   <th>Ultimo Evento</th>
                   <th>Conectores</th>
                   <th>Detalles</th>
-                  <th>Eliminar</th>
+                  <th>Reinicio</th>
                 </tr>
               </thead>
               <tbody > 
@@ -178,7 +192,7 @@ export const Home = () => {
                           <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
                         </td>
                         <td>
-                          <button type="button" className="btn btn-outline-danger"><BiTrash className='icon'/> Eliminar</button>
+                          <button type="button" className="btn btn-outline-danger" onClick={() => handleReset(row.id)}><GrPowerReset className='icon'/> Reiniciar</button>
                         </td>
                       </tr>
                     ))
