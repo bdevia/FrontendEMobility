@@ -57,7 +57,7 @@ export const Home = () => {
       ...prevState,
       show: false
     }));
-    navigate('/user/auth');
+    //navigate('/user/auth');
   };
 
   const onClickConnectors = (id: string) =>{
@@ -94,7 +94,7 @@ export const Home = () => {
   
     fetchData(); // Ejecutar fetchData una vez al montar el componente
   
-    const eventSource = new EventSource(`http://localhost:8080/api/sse/events/${userId}`);
+    const eventSource = new EventSource(`http://localhost:8080/api/sse/events/${userToken}`);
   
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -128,7 +128,7 @@ export const Home = () => {
   const handleReset = async (id: string) => {
     try {
       const body = {chargePointId: id, type: "hard"};
-      const response = await RequestHandler.sendRequet("POST", "/v16/restart/chargepoint", null, body);
+      const response = await RequestHandler.sendRequet("POST", "/v16/restart/chargepoint", sessionStorage.getItem("token"), body);
       console.log(response);
       if(response.status !== 200){
         setModalData({show: true, title: response.data.status, cause: response.data.cause, variant: "danger"});

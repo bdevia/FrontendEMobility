@@ -1,5 +1,5 @@
 .connector{
-    height: max-content !important;
+    height: 320px !important;
 }
 
 .status-container {
@@ -67,5 +67,16 @@
 }
 
 .switch{
-    margin-top: 8px;
+    margin-top: 2px;
 }
+
+/* SwitchComponent.css */
+.form-check-input:checked {
+    background-color: green;
+    border-color: green;
+}
+  
+.form-check-input:focus {
+box-shadow: 0 0 0 0.2rem rgba(0, 128, 0, 0.25);
+}
+

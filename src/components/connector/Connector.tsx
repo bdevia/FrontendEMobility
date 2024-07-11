@@ -22,6 +22,7 @@ export const Connector = () => {
   const [mapState, setMapState] = useState<Map<number, MapStateConnector>>(new Map());
 
   const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: "", variant: ""});
+  const [checked, setChecked] = useState<Map<number, boolean>>(new Map());
 
   const mapStyle: Map<string, string> = new Map([
     ["Disconnected", "red"],
@@ -46,6 +47,7 @@ export const Connector = () => {
 
   useEffect(() => {
     const userId = sessionStorage.getItem("idTag");
+    const userToken = sessionStorage.getItem("token");
     const userData = {
       idTag: sessionStorage.getItem("idTag"),
       username: sessionStorage.getItem("user"),
@@ -64,10 +66,13 @@ export const Connector = () => {
           });
 
           const newMap = new Map(mapState);
+          const newcheckMap = new Map(checked);
           response.data.forEach((row: ConnectorData) => {
-            newMap.set(row.number_connector, {status: row.status, errorCode: row.errorCode, sizeReservationQueue: row.sizeReservationQueue, timestamp: row.timestamp})
+            newMap.set(row.number_connector, {status: row.status, errorCode: row.errorCode, sizeReservationQueue: row.sizeReservationQueue, timestamp: row.timestamp});
+            newcheckMap.set(row.number_connector, !(row.status === "Disconnected" || row.status === "Unavailable"));
           });
           setMapState(newMap);
+          setChecked(newcheckMap);
 
         }
         else if(response.status === 406){
@@ -81,7 +86,7 @@ export const Connector = () => {
     };
 
     const listenSse = () => {
-      const eventSource = new EventSource(`http://localhost:8080/api/sse/events/${userId}`);
+      const eventSource = new EventSource(`http://localhost:8080/api/sse/events/${userToken}`);
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -98,6 +103,9 @@ export const Connector = () => {
         else if(data.event === 'ExpiredSession'){
           sessionStorage.clear();
           setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
+        }
+        else if(data.event === 'StatusUser' && data.status === 'InReservation'){
+          setModalData({show: true, title: "Reservation in Process", cause: "The charger is reserved for you for 10 minutes", variant: "primary"});
         }
       };
 
@@ -181,6 +189,26 @@ export const Connector = () => {
     }
   }
 
+  const handleChange = async (connectorId: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const operation = event.target.checked ? "Operative" : "Inoperative";
+      const body = {chargePointId: id, connectorId: connectorId, type: operation};
+      const response = await RequestHandler.sendRequet("POST", "/v16/stationOperation/changeAvailability/chargePoint", user.token, body);
+      if(response.status === 200){
+        const newCheckedMap = new Map(checked);
+        newCheckedMap.set(connectorId, event.target.checked);
+        setChecked(newCheckedMap);
+        setModalData({show: true, title: "Successful Change Availability", cause: "The change of availability has been successful", variant: "primary"});
+      }
+      else{
+        handleModalResponse(response.status, response.data.status, response.data.cause);
+      }
+    } 
+    catch(error){
+      console.error(error);
+    }
+  };
+
   const handleModalResponse = (status: number, title: string, cause: string) => {
     if(status === 406){
       sessionStorage.clear();
@@ -212,20 +240,26 @@ export const Connector = () => {
           <Table striped responsive>
             <thead>
               <tr>
+                <th>Actividad</th>
                 <th>N°</th>
-                <th>Estado</th>
+                <th>Estado Conector</th>
                 <th>Error Code</th>
                 <th>Ultimo Evento</th>
                 <th>En Espera</th>
                 <th>Reservación</th>
                 <th>Cargar Vehículo</th>
-                <th>Detalles</th>
               </tr>
             </thead>
             <tbody > 
               {connectors.data && connectors.data.length > 0 ? (
                 connectors.data.map((row, index) => (
                   <tr key={index}>
+                    <td>
+                      <div className="form-check form-switch switch">
+                        <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked={checked.get(row.number_connector)} onChange={(event) => handleChange(row.number_connector, event)}/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckChecked">{checked.get(row.number_connector) ? 'Activo': 'Inactivo'}</label>
+                      </div>
+                    </td>
                     <td>{row.number_connector}</td>
                     <td>
                       <div className="status-container">
@@ -240,10 +274,7 @@ export const Connector = () => {
                       <button type="button" className="btn btn-outline-primary" onClick={() => handleReservation(row.number_connector)}><BiBookmarkAltPlus className='icon'/> Reservar</button>
                     </td>
                     <td>
-                      <button type="button" className="btn btn-outline-primary" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
-                    </td>
-                    <td>
-                      <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
+                      <button type="button" className="btn btn-outline-success" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
                     </td>
                   </tr>
                 ))
