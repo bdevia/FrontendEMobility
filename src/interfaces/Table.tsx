@@ -23,3 +23,30 @@ export interface ConnectorData{
 export interface ArrayConnectorData{
     data: ConnectorData[];
 }
+
+export interface ChargePointDetails {
+    id: string;
+    id_list_auth: number;
+    vendor: string;
+    serial_number: string;
+    box_serial_number: string;
+    firmware_version: string;
+    icc_id: string;
+    imsi: string;
+    meter_serial_number: string;
+    meter_type: string;
+    connectors: number;
+    connection_type: string;
+    location: string;
+    coordinates: string;
+}
+
+export interface TableStatusDetails{
+    action: string;
+    status: string;
+    timestamp: string;
+}
+
+export interface ArrayTableStatusDetails{
+    data: TableStatusDetails[];
+}

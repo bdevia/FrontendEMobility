@@ -9,7 +9,7 @@ import { LiaPlusCircleSolid } from "react-icons/lia";
 import { RiInformationLine } from "react-icons/ri";
 import { PiPlugCharging } from "react-icons/pi";
 import { ModalInterface } from '../../interfaces/Modal';
-import MyModal from '../modal/Modal';
+import { MyModal }  from '../modal/Modal';
 import { MySidebar } from '../sidebar/Sidebar';
 import { MapState } from '../../interfaces/MapState';
 
@@ -52,16 +52,23 @@ export const Home = () => {
     setCurrentPage(pageNumber);
   };
 
-  const onHideModal = () => {
+  const onHideModal = (title: string) => {
     setModalData(prevState => ({
       ...prevState,
       show: false
     }));
-    //navigate('/user/auth');
+
+    if(title === "Session Expired"){
+      navigate('/user/auth');
+    }
   };
 
   const onClickConnectors = (id: string) =>{
     navigate(`/chargePoint/${id}/connectors`);
+  }
+
+  const onClickDetails = (id: string) => {
+    navigate(`/chargePoint/${id}/details`)
   }
 
   useEffect(() => {
@@ -130,7 +137,10 @@ export const Home = () => {
       const body = {chargePointId: id, type: "hard"};
       const response = await RequestHandler.sendRequet("POST", "/v16/restart/chargepoint", sessionStorage.getItem("token"), body);
       console.log(response);
-      if(response.status !== 200){
+      if(response.status === 200){
+        setModalData({show: true, title: "Successfull Restart", cause: "The charger has been restarted successfully", variant: "danger"});
+      }
+      else{
         setModalData({show: true, title: response.data.status, cause: response.data.cause, variant: "danger"});
       }
     }
@@ -180,7 +190,15 @@ export const Home = () => {
                         <td>{row.connection_type}</td>
                         <td>
                           <div className="status-container">
-                            <div className={mapState.get(row.id)?.status === "Connected" ? "circle green" : "circle red"}></div>
+                            <div className={
+                              mapState.get(row.id)?.status === "Connected" 
+                                ? "circle green" 
+                                : mapState.get(row.id)?.status === "Disconnected" 
+                                ? "circle red" 
+                                : mapState.get(row.id)?.status === "Restarting" 
+                                ? "circle red-blinking" 
+                                : ""
+                            }></div>
                             <span>{mapState.get(row.id)?.status}</span>
                           </div>
                         </td>
@@ -189,7 +207,7 @@ export const Home = () => {
                           <button type="button" className="btn btn-outline-primary" onClick={() => onClickConnectors(row.id.toString())}><PiPlugCharging className='icon'/> Conectores</button>
                         </td>
                         <td>
-                          <button type="button" className="btn btn-outline-primary"><RiInformationLine className='icon'/> Detalles</button>
+                          <button type="button" className="btn btn-outline-primary" onClick={() => onClickDetails(row.id.toString())}><RiInformationLine className='icon'/> Detalles</button>
                         </td>
                         <td>
                           <button type="button" className="btn btn-outline-danger" onClick={() => handleReset(row.id)}><GrPowerReset className='icon'/> Reiniciar</button>
@@ -223,7 +241,7 @@ export const Home = () => {
         </div> 
 
       </div>
-      <MyModal modalData={modalData} onHide={onHideModal}/>
+      <MyModal modalData={modalData} onHide={() => onHideModal(modalData.title)}/>
     </>
   );
 }

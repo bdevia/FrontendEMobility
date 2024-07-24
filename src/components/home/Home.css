@@ -87,6 +87,11 @@
 .red {
     background-color: red;
 }
+
+.red-blinking {
+    background-color: red;
+    animation: blinking 0.5s infinite alternate;
+}
   
 .icon {
     margin-bottom: 4px;
