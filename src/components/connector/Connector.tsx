@@ -6,7 +6,7 @@ import { ArrayConnectorData, ConnectorData } from '../../interfaces/Table';
 import { User } from '../../interfaces/User';
 import RequestHandler from '../../services/RequestHandler';
 import { ModalInterface } from '../../interfaces/Modal';
-import MyModal from '../modal/Modal';
+import { MyModal } from '../modal/Modal';
 import { MapStateConnector } from '../../interfaces/MapState';
 import './Connector.css'
 import { BiBookmarkAltPlus } from "react-icons/bi";
@@ -190,14 +190,16 @@ export const Connector = () => {
   }
 
   const handleChange = async (connectorId: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    setChecked(prevChecked => {
+      const newCheckedMap = new Map(prevChecked);
+      newCheckedMap.set(connectorId, event.target.checked);
+      return newCheckedMap;
+    });
     try {
       const operation = event.target.checked ? "Operative" : "Inoperative";
       const body = {chargePointId: id, connectorId: connectorId, type: operation};
       const response = await RequestHandler.sendRequet("POST", "/v16/stationOperation/changeAvailability/chargePoint", user.token, body);
       if(response.status === 200){
-        const newCheckedMap = new Map(checked);
-        newCheckedMap.set(connectorId, event.target.checked);
-        setChecked(newCheckedMap);
         setModalData({show: true, title: "Successful Change Availability", cause: "The change of availability has been successful", variant: "primary"});
       }
       else{
@@ -255,11 +257,20 @@ export const Connector = () => {
                 connectors.data.map((row, index) => (
                   <tr key={index}>
                     <td>
-                      <div className="form-check form-switch switch">
-                        <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked={checked.get(row.number_connector)} onChange={(event) => handleChange(row.number_connector, event)}/>
-                        <label className="form-check-label" htmlFor="flexSwitchCheckChecked">{checked.get(row.number_connector) ? 'Activo': 'Inactivo'}</label>
-                      </div>
-                    </td>
+                    <div className="form-check form-switch switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id={`flexSwitchCheckChecked-${row.number_connector}`}
+                        checked={checked.get(row.number_connector) || false}
+                        onChange={(event) => handleChange(row.number_connector, event)}
+                      />
+                      <label className="form-check-label" htmlFor={`flexSwitchCheckChecked-${row.number_connector}`}>
+                        {checked.get(row.number_connector) ? 'Activo' : 'Inactivo'}
+                      </label>
+                    </div>
+                  </td>
                     <td>{row.number_connector}</td>
                     <td>
                       <div className="status-container">

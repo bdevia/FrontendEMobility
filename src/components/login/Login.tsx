@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Login.css';
 import RequestHandler from '../../services/RequestHandler';
 import { ModalInterface } from '../../interfaces/Modal';
-import MyModal from '../modal/Modal';
+import { MyModal } from '../modal/Modal';
 
 export const Login = () => {
     const navigate = useNavigate();
