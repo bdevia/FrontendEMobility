@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { MySidebar } from '../sidebar/Sidebar';
-import { ArrayTableStatusDetails, ChargePointDetails } from '../../interfaces/Table';
+import { TableStatusFirmwareDetails, ChargePointDetails } from '../../interfaces/Table';
 import './Details.css';
 import { Table } from 'react-bootstrap';
 import RequestHandler from '../../services/RequestHandler';
 import { ModalInterface, ModalUpdateInput } from '../../interfaces/Modal';
 import { ModalUpdateFirmware, MyModal } from '../modal/Modal';
+import { table } from 'console';
 
 export const Details = () => {
     const navigate = useNavigate();
@@ -16,7 +17,7 @@ export const Details = () => {
     const [modalUpdateFirmware, setModalUpdateFirmware] = useState(false);
 
     const [details, setDetails] = useState<ChargePointDetails>();
-    const [tableStatus, setTableStatus] = useState<ArrayTableStatusDetails>({data: []});
+    const [tableStatusFirmware, setTableStatusFirmware] = useState<TableStatusFirmwareDetails>({status: "", timestamp: "", schedule: "", file: ""});
 
     const mapStyle: Map<string, string> = new Map([
         ["Sin Eventos", "grey"],
@@ -70,11 +71,13 @@ export const Details = () => {
                     };
                     setDetails(chargePointDetails);
 
-                    const chargePointStatusDetails: ArrayTableStatusDetails = {data: [
-                        { action: 'Actualización de Firmware', status: response.data.statusFirmware, timestamp: response.data.timestmapFirmware},
-                        { action: 'Obtención de Diagnostico', status: response.data.statusDiagnostic, timestamp: response.data.timestampDiagnostic}
-                    ]};
-                    setTableStatus(chargePointStatusDetails);
+                    const statusFirmware: TableStatusFirmwareDetails = { 
+                        status: response.data.statusFirmware, 
+                        timestamp: response.data.timestmapFirmware, 
+                        schedule: response.data.scheduleFirmware,
+                        file: response.data.fileFirmware
+                    };
+                    setTableStatusFirmware(statusFirmware);
                 }
             } 
             catch(error){
@@ -90,26 +93,14 @@ export const Details = () => {
                 console.log(data);
                 
                 if(data.event === 'FirmwareStatusNotification' && data.chargePointId === id){
-                    setTableStatus(prevStatus => {
-                        const updatedStatus = [...prevStatus.data];
-                        updatedStatus[0] = {
-                          ...updatedStatus[0],
-                          status: data.statusFirmware,
-                          timestamp: data.timestampFirmware
-                        };
-                        return { data: updatedStatus };
+                    setTableStatusFirmware({
+                        status: data.status,
+                        timestamp: data.timestamp,
+                        schedule: data.schedule,
+                        file: data.file
                     });
                 }
                 else if(data.event === 'DiagnosticsStatusNotification' && data.chargePointId === id){
-                    setTableStatus(prevStatus => {
-                        const updatedStatus = [...prevStatus.data];
-                        updatedStatus[1] = {
-                          ...updatedStatus[1],
-                          status: data.statusFirmware,
-                          timestamp: data.timestampFirmware
-                        };
-                        return { data: updatedStatus };
-                    });
                 }
                 else if(data.event === 'ExpiredSession'){
                     sessionStorage.clear();
@@ -142,7 +133,7 @@ export const Details = () => {
             const body = {chargePointId: id, retries: retries, retrieveDate: retieveDate};
             const response = await RequestHandler.sendRequet('POST', '/v16/firmware/update/chargePoint', sessionStorage.getItem("token"), body);
             if(response.status === 200){
-                setModalData({show: true, title: "successful scheduling", cause: "the firmware update scheduling has been completed successfully", variant: "primary"});
+                setModalData({show: true, title: "Successful Scheduling", cause: "The firmware update scheduling has been completed successfully", variant: "primary"});
             }
             else{
                 handleModalResponse(response.status, response.data.status, response.data.cause);
@@ -232,7 +223,7 @@ export const Details = () => {
 
                     <div className='below_container'>
                         <div className='content'>
-                            <h5>Eventos de Estado</h5>
+                            <h5></h5>
                         </div>
                         <div className='buttons'>
                             <button type='button' className="btn btn-outline-primary">Listas Autorización</button>
@@ -242,39 +233,42 @@ export const Details = () => {
                         </div>
                     </div>
 
+                    <div className='header_table'>
+                        <div className="title_container">
+                            <h5>Eventos de Actualizacion de Firmware</h5>
+                        </div>
+                    </div>
+
+
                     <div className='scrollable_tbody details'>
                         <Table striped responsive>
                         <thead>
                             <tr>
-                            <th>Tipo de Notificación</th>
-                            <th>Estado</th>
+                            <th>Nombre Archivo</th>
+                            <th>Fecha Programada</th>
+                            <th>Estado Actualización</th>
                             <th>Ultimo Evento</th>
                             </tr>
                         </thead>
                         <tbody > 
-                            {tableStatus.data.map((row, index) => (
-                            <tr key={index}>
-                                <td>{row.action}</td>
+                            {tableStatusFirmware ? (
+                            <tr>
+                                <td>{tableStatusFirmware.file}</td>
+                                <td>{tableStatusFirmware.schedule}</td>
                                 <td>
                                     <div className="status-container">
-                                    <div className={row.status !== undefined ? "circle " + mapStyle.get(row.status) : ""}></div>
-                                        <span>{row.status}</span>
+                                    <div className={tableStatusFirmware.status !== undefined ? "circle " + mapStyle.get(tableStatusFirmware.status) : ""}></div>
+                                        <span>{tableStatusFirmware.status}</span>
                                     </div>
                                 </td>
-                                <td>{row.timestamp}</td>
+                                <td>{tableStatusFirmware.timestamp}</td>
                             </tr>
-                            ))}
+                            ) : 
+                            <tr>
+                                <td colSpan={4}>No hay datos disponibles</td>
+                            </tr>}
                         </tbody>
                         </Table>
-                    </div>
-
-
-                    <div className='below_container'>
-                        <div className='content'>
-                            <h5></h5>
-                        </div>
-                        <div className='buttons'>
-                        </div>
                     </div>
 
                 </div>

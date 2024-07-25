@@ -26,6 +26,7 @@ export const Connector = () => {
 
   const mapStyle: Map<string, string> = new Map([
     ["Disconnected", "red"],
+    ["Sin Eventos", "grey"],
     ["Unavailable", "red"],
     ["Available", "green"],
     ["Reserved", "yellow"],
@@ -69,7 +70,7 @@ export const Connector = () => {
           const newcheckMap = new Map(checked);
           response.data.forEach((row: ConnectorData) => {
             newMap.set(row.number_connector, {status: row.status, errorCode: row.errorCode, sizeReservationQueue: row.sizeReservationQueue, timestamp: row.timestamp});
-            newcheckMap.set(row.number_connector, !(row.status === "Disconnected" || row.status === "Unavailable"));
+            newcheckMap.set(row.number_connector, !(row.status === "Disconnected" || row.status === "Unavailable" || row.status === "Sin Eventos"));
           });
           setMapState(newMap);
           setChecked(newcheckMap);
@@ -98,6 +99,9 @@ export const Connector = () => {
               newMap.set(data.connectorId, {status: data.status, errorCode: data.errorCode, sizeReservationQueue: data.sizeReservationQueue, timestamp: data.timestamp});
               return newMap;
             });
+            const newcheckMap = new Map(checked);
+            newcheckMap.set(data.connectorId, !(data.status === "Disconnected" || data.status === "Unavailable" || data.status === "Sin Eventos"));
+            setChecked(newcheckMap);
           }
         }
         else if(data.event === 'ExpiredSession'){
@@ -203,6 +207,11 @@ export const Connector = () => {
         setModalData({show: true, title: "Successful Change Availability", cause: "The change of availability has been successful", variant: "primary"});
       }
       else{
+        setChecked(prevChecked => {
+          const newCheckedMap = new Map(prevChecked);
+          newCheckedMap.set(connectorId, !event.target.checked);
+          return newCheckedMap;
+        });
         handleModalResponse(response.status, response.data.status, response.data.cause);
       }
     } 
@@ -285,7 +294,7 @@ export const Connector = () => {
                       <button type="button" className="btn btn-outline-primary" onClick={() => handleReservation(row.number_connector)}><BiBookmarkAltPlus className='icon'/> Reservar</button>
                     </td>
                     <td>
-                      <button type="button" className="btn btn-outline-success" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
+                      <button type="button" className="btn btn-outline-primary" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
                     </td>
                   </tr>
                 ))

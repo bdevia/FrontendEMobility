@@ -41,12 +41,13 @@ export interface ChargePointDetails {
     coordinates: string;
 }
 
-export interface TableStatusDetails{
-    action: string;
+export interface TableStatusFirmwareDetails{
     status: string;
     timestamp: string;
+    schedule: string;
+    file: string;
 }
 
 export interface ArrayTableStatusDetails{
-    data: TableStatusDetails[];
+    data: TableStatusFirmwareDetails[];
 }
