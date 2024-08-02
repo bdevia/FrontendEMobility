@@ -138,7 +138,7 @@ export const Home = () => {
       const response = await RequestHandler.sendRequet("POST", "/v16/restart/chargepoint", sessionStorage.getItem("token"), body);
       console.log(response);
       if(response.status === 200){
-        setModalData({show: true, title: "Successfull Restart", cause: "The charger has been restarted successfully", variant: "danger"});
+        setModalData({show: true, title: "Successfull Restart", cause: "The charger has been restarted successfully", variant: "primary"});
       }
       else{
         setModalData({show: true, title: response.data.status, cause: response.data.cause, variant: "danger"});

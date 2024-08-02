@@ -7,5 +7,7 @@ export interface User{
 
 export interface UserState{
     status: string;
-    turn: number;
+    chargePointId: string;
+    connectorId: string;
+    positionInQueue: number;
 }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { MySidebar } from '../sidebar/Sidebar';
 import { Table } from 'react-bootstrap';
 import { ArrayConnectorData, ConnectorData } from '../../interfaces/Table';
-import { User } from '../../interfaces/User';
+import { User, UserState } from '../../interfaces/User';
 import RequestHandler from '../../services/RequestHandler';
 import { ModalInterface } from '../../interfaces/Modal';
 import { MyModal } from '../modal/Modal';
@@ -20,12 +20,14 @@ export const Connector = () => {
   const [user, setUser] = useState<User>({ idTag: "", username: "", typeUser: "", token: "" });
   const [connectors, setConnectors] = useState<ArrayConnectorData>({data: []});
   const [mapState, setMapState] = useState<Map<number, MapStateConnector>>(new Map());
+  const [userStatus, setUserStatus] = useState<UserState>({status: "", chargePointId: "", connectorId: "", positionInQueue: -1})
 
   const [modalData, setModalData] = useState<ModalInterface>({show: false, title: "", cause: "", variant: ""});
   const [checked, setChecked] = useState<Map<number, boolean>>(new Map());
 
   const mapStyle: Map<string, string> = new Map([
     ["Disconnected", "red"],
+    ["Sin Eventos", "grey"],
     ["Unavailable", "red"],
     ["Available", "green"],
     ["Reserved", "yellow"],
@@ -69,7 +71,7 @@ export const Connector = () => {
           const newcheckMap = new Map(checked);
           response.data.forEach((row: ConnectorData) => {
             newMap.set(row.number_connector, {status: row.status, errorCode: row.errorCode, sizeReservationQueue: row.sizeReservationQueue, timestamp: row.timestamp});
-            newcheckMap.set(row.number_connector, !(row.status === "Disconnected" || row.status === "Unavailable"));
+            newcheckMap.set(row.number_connector, !(row.status === "Disconnected" || row.status === "Unavailable" || row.status === "Sin Eventos"));
           });
           setMapState(newMap);
           setChecked(newcheckMap);
@@ -82,6 +84,23 @@ export const Connector = () => {
       }
       catch(error){
           console.error(error);
+      }
+    };
+
+    const fechDataUser = async () => {
+      try {
+        const response = await RequestHandler.sendRequet("GET", "/business/user/status", userToken, null);
+        if(response.status === 200){
+          const data: UserState = response.data; // Tipado explícito
+          setUserStatus(data);
+        }
+        else if(response.status === 406){
+          sessionStorage.clear();
+          setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
+        }
+      } 
+      catch(error){
+        console.error(error);
       }
     };
 
@@ -98,14 +117,20 @@ export const Connector = () => {
               newMap.set(data.connectorId, {status: data.status, errorCode: data.errorCode, sizeReservationQueue: data.sizeReservationQueue, timestamp: data.timestamp});
               return newMap;
             });
+            const newcheckMap = new Map(checked);
+            newcheckMap.set(data.connectorId, !(data.status === "Disconnected" || data.status === "Unavailable" || data.status === "Sin Eventos"));
+            setChecked(newcheckMap);
           }
         }
         else if(data.event === 'ExpiredSession'){
           sessionStorage.clear();
           setModalData({show: true, title: "Session Expired", cause: "Your session has expired, please log in again", variant: "danger"});
         }
-        else if(data.event === 'StatusUser' && data.status === 'InReservation'){
-          setModalData({show: true, title: "Reservation in Process", cause: "The charger is reserved for you for 10 minutes", variant: "primary"});
+        else if(data.event === "UserStatus"){
+          setUserStatus(data);
+          if(data.status === 'InReservation'){
+            setModalData({show: true, title: "Reservation in Process", cause: "The charger is reserved for you for 10 minutes", variant: "primary"});
+          }
         }
       };
 
@@ -121,6 +146,7 @@ export const Connector = () => {
     };
 
     fetchData();
+    fechDataUser();
     listenSse();
   
   }, []);
@@ -144,7 +170,6 @@ export const Connector = () => {
   const handleCancelReservation = async () => {
     try {
       const response = await RequestHandler.sendRequet("POST", "/business/reservation/cancel", user.token, {chargePointId: id});
-      console.log(response);
       if(response.status === 200){
         setModalData({show: true, title: "successful reservation cancellation", cause: "Your cancellation has been processed correctly", variant: "primary"});
       }
@@ -176,7 +201,6 @@ export const Connector = () => {
   const handlerRemoteStopTransaction = async () => {
     try {
       const response = await RequestHandler.sendRequet("POST", "/business/remoteTransaction/stop", user.token, {chargePointId: id});
-      console.log(response);
       if(response.status === 200){
         setModalData({show: true, title: "Stopping Charging", cause: "Stopping charging, please wait a few seconds", variant: "primary"});
       }
@@ -203,6 +227,11 @@ export const Connector = () => {
         setModalData({show: true, title: "Successful Change Availability", cause: "The change of availability has been successful", variant: "primary"});
       }
       else{
+        setChecked(prevChecked => {
+          const newCheckedMap = new Map(prevChecked);
+          newCheckedMap.set(connectorId, !event.target.checked);
+          return newCheckedMap;
+        });
         handleModalResponse(response.status, response.data.status, response.data.cause);
       }
     } 
@@ -220,6 +249,18 @@ export const Connector = () => {
       setModalData({show: true, title: title, cause: cause, variant: "danger"});
     }
   }
+
+  const renderSizeReservationQueue = (size?: number, position?: number | null) => {
+    if((size === 0 || size == null) && (position == null || position === 0)){
+      return `Sin Usuarios`;
+    }
+    else if(size != null && size > 0 && position != null && position > 0){
+      return `${position} / ${size} Usuarios`;
+    }
+    else if(size != null && size > 0 && (position == null || position === 0)){
+      return `${size} Usuarios`;
+    }
+  };
 
   return (
    <>
@@ -280,12 +321,12 @@ export const Connector = () => {
                     </td>
                     <td>{mapState.get(row.number_connector)?.errorCode}</td>
                     <td>{mapState.get(row.number_connector)?.timestamp}</td>
-                    <td>{mapState.get(row.number_connector)?.sizeReservationQueue ?? 0 > 0 ? `${mapState.get(row.number_connector)?.sizeReservationQueue} Usuarios` : 'Sin Usuarios'}</td>
+                    <td>{renderSizeReservationQueue(mapState.get(row.number_connector)?.sizeReservationQueue, userStatus.positionInQueue)}</td>
                     <td>
                       <button type="button" className="btn btn-outline-primary" onClick={() => handleReservation(row.number_connector)}><BiBookmarkAltPlus className='icon'/> Reservar</button>
                     </td>
                     <td>
-                      <button type="button" className="btn btn-outline-success" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
+                      <button type="button" className="btn btn-outline-primary" onClick={() => handleRemoteStartTransaction(row.number_connector)}><MdOutlineNotStarted className='icon'/> Iniciar Carga</button>
                     </td>
                   </tr>
                 ))
