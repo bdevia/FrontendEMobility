@@ -17,7 +17,7 @@ export interface ConnectorData{
     errorCode: string;
     timestamp: string;
     sizeReservationQueue: number;
-    idTagReservationInProgress: string;
+    //idTagReservationInProgress: string;
 }
 
 export interface ArrayConnectorData{
